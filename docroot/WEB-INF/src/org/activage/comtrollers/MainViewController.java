@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
@@ -21,17 +22,28 @@ import com.google.gson.JsonParser;
 public class MainViewController {
 	
 	//private static final String URL = "http://service_registry:80/";
-	private static final String URL = "http://localhost:20085/";
-	private static final String SERVICE_REGISTRY_URL = URL + "services";
-	private static final String PLATFORM_REGISTRY_URL = URL + "platforms";
+	private static final String DEFAULT_URL = "http://localhost:20085/";
+	private String URL;
+	
+	@PostConstruct
+	public void init() {
+		URL = System.getenv("BACKEND_URL");
+		if (URL == null || URL.isEmpty()){
+			System.out.println("Use default");
+			URL = DEFAULT_URL;
+		}
+		System.out.println("===> " + URL);
+	}
 
 	
 	private JsonObject getIpsm() throws Exception{
+		String SERVICE_REGISTRY_URL = URL + "services";
 		String s = HTTPClient.sendGet(SERVICE_REGISTRY_URL + "/ipsm");
 		return new JsonParser().parse(s).getAsJsonObject();
 	}
 	
 	public JsonArray getAllServices() throws Exception{
+		String SERVICE_REGISTRY_URL = URL + "services";
 		String s = HTTPClient.sendGet(SERVICE_REGISTRY_URL);
 		return new JsonParser().parse(s).getAsJsonArray();
 	}
@@ -44,6 +56,7 @@ public class MainViewController {
 	public void saveIpsm(String url) throws Exception{
 		JsonObject json = getIpsm();
 		json.addProperty("url", url);
+		String SERVICE_REGISTRY_URL = URL + "services";
 		HTTPClient.sendPut(SERVICE_REGISTRY_URL + "/ipsm", json.toString());
 	}
 	
@@ -64,6 +77,7 @@ public class MainViewController {
 				for (Service newService : services){
 					if (s.getId().equals(newService.getId())){
 						service = serviceTranslatorToJson(service, newService);
+						String SERVICE_REGISTRY_URL = URL + "services";
 						HTTPClient.sendPut(SERVICE_REGISTRY_URL + "/" + s.getId(), service.toString());
 						break;
 					}
@@ -109,6 +123,7 @@ public class MainViewController {
 	
 	public List<Platform> getPlatforms() throws Exception{
 		List<Platform> list = new ArrayList<Platform>();
+		String PLATFORM_REGISTRY_URL = URL + "platforms";
 		String s = HTTPClient.sendGet(PLATFORM_REGISTRY_URL);
 		JsonArray array = new JsonParser().parse(s).getAsJsonArray();
 		for (int i=0; i < array.size(); i++){
@@ -134,6 +149,7 @@ public class MainViewController {
 				for (SyntacticTranslator newST : syntacticTranslators){
 					if (st.getId().equals(newST.getId())){
 						service = syntacticTranslatorToJson(service, newST);
+						String SERVICE_REGISTRY_URL = URL + "services";
 						HTTPClient.sendPut(SERVICE_REGISTRY_URL + "/" + st.getId(), service.toString());
 						break;
 					}
@@ -146,24 +162,28 @@ public class MainViewController {
 	public void saveNewSyntacticTranslator(SyntacticTranslator st) throws IOException{
 		JsonObject json = new JsonObject();
 		json = syntacticTranslatorToJson(json, st);
+		String SERVICE_REGISTRY_URL = URL + "services";
 		HTTPClient.sendPost(SERVICE_REGISTRY_URL, json.toString());	
 	}
 	
 	public void saveNewPlatform(Platform p) throws IOException{
 		JsonObject json = new JsonObject();
 		json = platformToJson(json, p);
+		String PLATFORM_REGISTRY_URL = URL + "platforms";
 		HTTPClient.sendPost(PLATFORM_REGISTRY_URL, json.toString());	
 	}
 	
 	public void savePlatform(Platform p) throws IOException{
 		JsonObject json = new JsonObject();
 		json = platformToJson(json, p);
+		String PLATFORM_REGISTRY_URL = URL + "platforms";
 		HTTPClient.sendPost(PLATFORM_REGISTRY_URL, json.toString());
 	}
 	
 	public void saveNewService(Service s) throws IOException{
 		JsonObject json = new JsonObject();
 		json = serviceTranslatorToJson(json, s);
+		String SERVICE_REGISTRY_URL = URL + "services";
 		HTTPClient.sendPost(SERVICE_REGISTRY_URL, json.toString());	
 	}
 	
@@ -211,14 +231,17 @@ public class MainViewController {
 	}
 	
 	public void deleteSyntacticTranslators(SyntacticTranslator st) throws IOException{
+		String SERVICE_REGISTRY_URL = URL + "services";
 		HTTPClient.sendDelete(SERVICE_REGISTRY_URL + "/" + st.getId());
 	}
 	
 	public void deleteService(Service s) throws IOException{
+		String SERVICE_REGISTRY_URL = URL + "services";
 		HTTPClient.sendDelete(SERVICE_REGISTRY_URL + "/" + s.getId());
 	}
 	
 	public void deletePlatform(Platform p) throws IOException{
+		String PLATFORM_REGISTRY_URL = URL + "platforms";
 		HTTPClient.sendDelete(PLATFORM_REGISTRY_URL + "/" + p.getId());
 	}
 
