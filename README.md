@@ -26,3 +26,7 @@ For more information refer to ``DT-AIOTES_docker`` repo, under [Service Manager]
 
 ## Usage
 By default, the application will be available from a web browser at the following URL: http://localhost:9082/web/activage/service-manager. In case you use a Windows machine, you may have to replace `localhost` with `192.168.99.100`.
+
+## License
+
+EUPL v1.2
